@@ -175,5 +175,11 @@ class CollectionController extends Controller {
         $products=DB::select("SELECT * FROM products WHERE products.id IN (SELECT products_collection.product_id from products_collection WHERE products_collection.collection_id=$id)");
         return view('frontend.collections.details',compact('collection','products'));
     }
+    
+    
+    public function load_collections_section(){
+        $collections = DB::table('collections')->orderBy('created_at', 'desc')->paginate(12);
+        return view('frontend.partials.collections_section',compact('collections'));
+    }
 
 }

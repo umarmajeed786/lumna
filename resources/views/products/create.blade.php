@@ -169,7 +169,7 @@
 							<input type="text" class="form-control" value="{{__('Colors')}}" disabled>
 						</div>
 						<div class="col-lg-7">
-							<select class="form-control color-var-select" name="colors[]" id="colors" multiple disabled>
+							<select class="form-control  color-var-select" name="colors[]" id="colors" multiple disabled>
 								@foreach (\App\Color::orderBy('name', 'asc')->get() as $key => $color)
 									<option value="{{ $color->code }}">{{ $color->name }}</option>
 								@endforeach
@@ -182,7 +182,14 @@
 							</label>
 						</div>
 					</div>
+                  	<div class="form-group">
+						<label class="col-lg-2 control-label">Variation Images</label>
+						<div class="col-lg-7">
+							<div id="color_img" style="display:none">
 
+							</div>
+						</div>
+					</div>
 					<div class="form-group">
 						<div class="col-lg-2">
 							<input type="text" class="form-control" value="{{__('Attributes')}}" disabled>
@@ -213,6 +220,32 @@
 							<button type="button" class="btn btn-info" onclick="add_more_customer_choice_option()">{{ __('Add more customer choice option') }}</button>
 						</div>
 					</div> --}}
+				</div>
+			</div>
+			
+				<div class="panel">
+				<div class="panel-heading bord-btm">
+					<h3 class="panel-title">Product Specifications</h3>
+				</div>
+				<div class="panel-body">
+				
+				<div class="repeater">
+                    <!--
+                        The value given to the data-repeater-list attribute will be used as the
+                        base of rewritten name attributes.  In this example, the first
+                        data-repeater-item's name attribute would become group-a[0][text-input],
+                        and the second data-repeater-item would become group-a[1][text-input]
+                    -->
+                    <div data-repeater-list="specifications">
+                      <div data-repeater-item class="form-inline" style="margin-top:5px;margin-bottom:5px">
+                        <input type="text" class="form-control" style="width:40%" name="spec_name" placeholder="Specification Name" value=""/>
+                        <input type="text" class="form-control" style="width:40%" name="spec_val" placeholder="Specification Value" value=""/>
+                        <input data-repeater-delete type="button" class="btn btn-danger btn-sm" value="Delete"/>
+                      </div>
+                    </div>
+                    <input data-repeater-create type="button" class="btn btn-success btn-sm" value="Add"/>
+                </div>
+                				
 				</div>
 			</div>
 			<div class="panel">
@@ -394,12 +427,56 @@
 	$('input[name="colors_active"]').on('change', function() {
 	    if(!$('input[name="colors_active"]').is(':checked')){
 			$('#colors').prop('disabled', true);
+			$('#color_img').hide();
 		}
 		else{
 			$('#colors').prop('disabled', false);
+			$('#color_img').show();
 		}
 		update_sku();
 	});
+	
+	$(document).ready(function () {
+        $('.repeater').repeater({
+            // (Optional)
+            // start with an empty list of repeaters. Set your first (and only)
+            // "data-repeater-item" with style="display:none;" and pass the
+            // following configuration flag
+            initEmpty: true,
+            // (Optional)
+            // "defaultValues" sets the values of added items.  The keys of
+            // defaultValues refer to the value of the input's name attribute.
+            // If a default value is not specified for an input, then it will
+            // have its value cleared.
+            defaultValues: {
+                'text-input': 'foo'
+            },
+            // (Optional)
+            // "show" is called just after an item is added.  The item is hidden
+            // at this point.  If a show callback is not given the item will
+            // have $(this).show() called on it.
+            show: function () {
+                $(this).slideDown();
+            },
+            // (Optional)
+            // "hide" is called when a user clicks on a data-repeater-delete
+            // element.  The item is still visible.  "hide" is passed a function
+            // as its first argument which will properly remove the item.
+            // "hide" allows for a confirmation step, to send a delete request
+            // to the server, etc.  If a hide callback is not given the item
+            // will be deleted.
+            hide: function (deleteElement) {
+                if(confirm('Are you sure you want to delete this element?')) {
+                    $(this).slideUp(deleteElement);
+                }
+            },
+           
+            // (Optional)
+            // Removes the delete button from the first list item,
+            // defaults to false.
+            isFirstItemUndeletable: false
+        })
+    });
 
 	$('#colors').on('change', function() {
 	    update_sku();
@@ -516,6 +593,26 @@
 				alert('File size too big');
 			}
 		});
+		
+		
+		
+		$("#color_img").spartanMultiImagePicker({
+			fieldName:        'color_img[]',
+			rowHeight:        '200px',
+			groupClassName:   'col-md-4 col-sm-4 col-xs-6',
+			maxFileSize:      '',
+			dropFileLabel : "Drop Here",
+			onExtensionErr : function(index, file){
+				console.log(index, file,  'extension err');
+				alert('Please only input png or jpg type file')
+			},
+			onSizeErr : function(index, file){
+				console.log(index, file,  'file size too big');
+				alert('File size too big');
+			}
+		});
+	
+	
 		$("#thumbnail_img").spartanMultiImagePicker({
 			fieldName:        'thumbnail_img',
 			maxCount:         1,

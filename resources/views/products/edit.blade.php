@@ -226,7 +226,21 @@
 						</div>
 						<div class="col-lg-7">
 							<select class="form-control color-var-select" name="colors[]" id="colors" multiple>
+							    <?php
+							    $cc_arr=array();
+							    	foreach (\App\Color::orderBy('name', 'asc')->get() as $key => $color){
+							    	   $cc_arr[]=$color->code; 
+							    	}
+							  
+							    ?>
+							    @foreach(json_decode($product->colors) as $item)
+							   
+							      @if(!in_array($item, $cc_arr))
+							    	<option value="{{ $item }}" selected >{{ $item }}</option>
+							       @endif
+							    @endforeach
 								@foreach (\App\Color::orderBy('name', 'asc')->get() as $key => $color)
+								   
 									<option value="{{ $color->code }}" <?php if(in_array($color->code, json_decode($product->colors))) echo 'selected'?> >{{ $color->name }}</option>
 								@endforeach
 							</select>
@@ -236,6 +250,29 @@
 								<input value="1" type="checkbox" name="colors_active" <?php if(count(json_decode($product->colors)) > 0) echo "checked";?> >
 								<span class="slider round"></span>
 							</label>
+						</div>
+					</div>
+					
+					<div class="form-group">
+						<label class="col-lg-2 control-label">Variation Images</label>
+						<div class="col-lg-7" >
+							<div id="color_img" <?php if(!count(json_decode($product->colors)) > 0) {?> style="display:none" <?php } ?>>
+								@if(is_array(json_decode($product->var_img)))
+									@foreach (json_decode($product->var_img) as $key => $photo)
+										<div class="col-md-4 col-sm-4 col-xs-6">
+											<div class="img-upload-preview">
+												@if(strpos($photo, 'img.alicdn.com') !== false)
+													<img loading="lazy"  class="img-md" src="{{ $photo }}" alt="Image">
+												@else
+													<img loading="lazy"  src="{{ asset($photo) }}" alt="" class="img-responsive">
+												@endif
+												<input type="hidden" name="previous_color_photos[]" value="{{ $photo }}">
+												<button type="button" class="btn btn-danger close-btn remove-files"><i class="fa fa-times"></i></button>
+											</div>
+										</div>
+									@endforeach
+								@endif
+							</div>
 						</div>
 					</div>
 
@@ -248,6 +285,7 @@
 								@foreach (\App\Attribute::all() as $key => $attribute)
 									<option value="{{ $attribute->id }}" @if($product->attributes != null && in_array($attribute->id, json_decode($product->attributes, true))) selected @endif>{{ $attribute->name }}</option>
 								@endforeach
+							
 	                        </select>
 	                    </div>
 	                </div>
@@ -258,20 +296,23 @@
 					</div>
 
 					<div class="customer_choice_options" id="customer_choice_options">
+					    @if($product->choice_options)
 						@foreach (json_decode($product->choice_options) as $key => $choice_option)
 							<div class="form-group">
 								<div class="col-lg-2">
-									<input type="hidden" name="choice_no[]" value="{{ $choice_option->attribute_id }}">
-									<input type="text" class="form-control" name="choice[]" value="{{ \App\Attribute::find($choice_option->attribute_id)->name }}" placeholder="Choice Title" disabled>
+									<input type="hidden" name="choice_no[]" value="{{ @$choice_option->attribute_id }}">
+									<input type="text" class="form-control" name="choice[]" value="{{ @\App\Attribute::find(@$choice_option->attribute_id)->name }}" placeholder="Choice Title" disabled>
 								</div>
 								<div class="col-lg-7">
-									<input type="text" class="form-control" name="choice_options_{{ $choice_option->attribute_id }}[]" placeholder="Enter choice values" value="{{ implode(',', $choice_option->values) }}" data-role="tagsinput" onchange="update_sku()">
+									<input type="text" class="form-control" name="choice_options_{{ @$choice_option->attribute_id }}[]" placeholder="Enter choice values" value="{{ implode(',', @$choice_option->values) }}" data-role="tagsinput" onchange="update_sku()">
 								</div>
 								<div class="col-lg-2">
 									<button onclick="delete_row(this)" class="btn btn-danger btn-icon"><i class="demo-psi-recycling icon-lg"></i></button>
 								</div>
 							</div>
 						@endforeach
+						@endif
+						
 					</div>
 					{{-- <div class="form-group">
 						<div class="col-lg-2">
@@ -280,6 +321,39 @@
 					</div> --}}
 				</div>
 			</div>
+			
+				<div class="panel">
+				<div class="panel-heading bord-btm">
+					<h3 class="panel-title">Product Specifications</h3>
+				</div>
+				<div class="panel-body">
+				
+				<div class="repeater">
+                    <!--
+                        The value given to the data-repeater-list attribute will be used as the
+                        base of rewritten name attributes.  In this example, the first
+                        data-repeater-item's name attribute would become group-a[0][text-input],
+                        and the second data-repeater-item would become group-a[1][text-input]
+                    -->
+                    <div data-repeater-list="specifications">
+                        
+                    @if(count(json_decode($product->specifications))>0) 
+                      @foreach(json_decode($product->specifications) as $item)
+                      <div data-repeater-item class="form-inline" style="margin-top:5px;margin-bottom:5px">
+                          
+                        <input type="text" class="form-control" style="width:40%" name="spec_name" placeholder="Specification Name" value="{{$item->name}}"/>
+                        <input type="text" class="form-control" style="width:40%" name="spec_val" placeholder="Specification Value" value="{{$item->value}}"/>
+                        <input data-repeater-delete type="button" class="btn btn-danger btn-sm" value="Delete"/>
+                      </div>
+                      @endforeach
+                      @endif
+                    </div>
+                    <input data-repeater-create type="button" class="btn btn-success btn-sm" value="Add"/>
+                </div>
+                				
+				</div>
+			</div>
+			
 			<div class="panel">
 				<div class="panel-heading bord-btm">
 					<h3 class="panel-title">{{__('Product price + stock')}}</h3>
@@ -463,6 +537,49 @@
 	// if(isNaN(i)){
 	// 	i =0;
 	// }
+	
+		$(document).ready(function () {
+        $('.repeater').repeater({
+            // (Optional)
+            // start with an empty list of repeaters. Set your first (and only)
+            // "data-repeater-item" with style="display:none;" and pass the
+            // following configuration flag
+           // initEmpty: true,
+            // (Optional)
+            // "defaultValues" sets the values of added items.  The keys of
+            // defaultValues refer to the value of the input's name attribute.
+            // If a default value is not specified for an input, then it will
+            // have its value cleared.
+            defaultValues: {
+                'text-input': 'foo'
+            },
+            // (Optional)
+            // "show" is called just after an item is added.  The item is hidden
+            // at this point.  If a show callback is not given the item will
+            // have $(this).show() called on it.
+            show: function () {
+                $(this).slideDown();
+            },
+            // (Optional)
+            // "hide" is called when a user clicks on a data-repeater-delete
+            // element.  The item is still visible.  "hide" is passed a function
+            // as its first argument which will properly remove the item.
+            // "hide" allows for a confirmation step, to send a delete request
+            // to the server, etc.  If a hide callback is not given the item
+            // will be deleted.
+            hide: function (deleteElement) {
+                if(confirm('Are you sure you want to delete this element?')) {
+                    $(this).slideUp(deleteElement);
+                }
+            },
+           
+            // (Optional)
+            // Removes the delete button from the first list item,
+            // defaults to false.
+            isFirstItemUndeletable: false
+        })
+    });
+
 
 	function add_more_customer_choice_option(i, name){
 		$('#customer_choice_options').append('<div class="form-group"><div class="col-lg-2"><input type="hidden" name="choice_no[]" value="'+i+'"><input type="text" class="form-control" name="choice[]" value="'+name+'" readonly></div><div class="col-lg-7"><input type="text" class="form-control" name="choice_options_'+i+'[]" placeholder="Enter choice values" data-role="tagsinput" onchange="update_sku()"></div><div class="col-lg-2"><button onclick="delete_row(this)" class="btn btn-danger btn-icon"><i class="demo-psi-recycling icon-lg"></i></button></div></div>');
@@ -472,9 +589,11 @@
 	$('input[name="colors_active"]').on('change', function() {
 	    if(!$('input[name="colors_active"]').is(':checked')){
 			$('#colors').prop('disabled', true);
+				$('#color_img').hide();
 		}
 		else{
 			$('#colors').prop('disabled', false);
+				$('#color_img').show();
 		}
 		update_sku();
 	});
@@ -493,6 +612,8 @@
 	}
 
 	function update_sku(){
+	    
+	    console.log($('#choice_form'));
 		$.ajax({
 		   type:"POST",
 		   url:'{{ route('products.sku_combination_edit') }}',
@@ -616,6 +737,24 @@
 				alert('File size too big');
 			}
 		});
+		
+			$("#color_img").spartanMultiImagePicker({
+			fieldName:        'color_img[]',
+		
+			rowHeight:        '200px',
+			groupClassName:   'col-md-4 col-sm-4 col-xs-6',
+			maxFileSize:      '',
+			dropFileLabel : "Drop Here",
+			onExtensionErr : function(index, file){
+				console.log(index, file,  'extension err');
+				alert('Please only input png or jpg type file')
+			},
+			onSizeErr : function(index, file){
+				console.log(index, file,  'file size too big');
+				alert('File size too big');
+			}
+		});
+		
 		$("#thumbnail_img").spartanMultiImagePicker({
 			fieldName:        'thumbnail_img',
 			maxCount:         1,

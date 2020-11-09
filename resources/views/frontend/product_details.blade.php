@@ -36,7 +36,7 @@
     <!-- SHOP GRID WRAPPER -->
     <section class="product-details-area gry-bg">
         <div class="container">
-
+         
             <div class="bg-white">
 
                 <!-- Product gallery and Description -->
@@ -45,21 +45,34 @@
                         <div class="product-gal sticky-top d-flex flex-row-reverse">
                             @if(is_array(json_decode($detailedProduct->photos)) && count(json_decode($detailedProduct->photos)) > 0)
                                 <div class="product-gal-img">
-                                    <img src="{{ asset('frontend/images/placeholder.jpg') }}" class="xzoom img-fluid lazyload" src="{{ asset('frontend/images/placeholder.jpg') }}" data-src="{{ asset(json_decode($detailedProduct->photos)[0]) }}" xoriginal="{{ asset(json_decode($detailedProduct->photos)[0]) }}" />
-                                </div>
+                                    @if (strpos(json_decode($detailedProduct->photos)[0], 'img.alicdn.com') !== false)
+                                     <img src="{{ asset('frontend/images/placeholder.jpg') }}" class="xzoom img-fluid lazyload" src="{{ asset('frontend/images/placeholder.jpg') }}" data-src="{{ json_decode($detailedProduct->photos)[0] }}" xoriginal="{{ json_decode($detailedProduct->photos)[0] }}" />
+                              
+                                    @else
+                                     <img src="{{ asset('frontend/images/placeholder.jpg') }}" class="xzoom img-fluid lazyload" src="{{ asset('frontend/images/placeholder.jpg') }}" data-src="{{ asset(json_decode($detailedProduct->photos)[0]) }}" xoriginal="{{ asset(json_decode($detailedProduct->photos)[0]) }}" />
+                              
+                                    @endif
+                                     </div>
                                 <div class="product-gal-thumb">
                                     <div class="xzoom-thumbs">
                                         @foreach (json_decode($detailedProduct->photos) as $key => $photo)
-                                            <a href="{{ asset($photo) }}">
+                                            @if (strpos($photo, 'img.alicdn.com') !== false)
+                                             <a href="{{ $photo }}">
+                                                <img src="{{ asset('frontend/images/placeholder.jpg') }}" class="xzoom-gallery lazyload" src="{{ asset('frontend/images/placeholder.jpg') }}" width="80" data-src="{{ $photo }}"  @if($key == 0) xpreview="{{ $photo }}" @endif>
+                                            </a>
+                                            @else
+                                             <a href="{{ asset($photo) }}">
                                                 <img src="{{ asset('frontend/images/placeholder.jpg') }}" class="xzoom-gallery lazyload" src="{{ asset('frontend/images/placeholder.jpg') }}" width="80" data-src="{{ asset($photo) }}"  @if($key == 0) xpreview="{{ asset($photo) }}" @endif>
                                             </a>
+                                            @endif
+                                           
                                         @endforeach
                                     </div>
                                 </div>
                             @endif
                         </div>
                     </div>
-
+                    
                     <div class="col-lg-6">
                         <!-- Product description -->
                         <div class="product-description-wrapper">
@@ -192,14 +205,17 @@
                             <form id="option-choice-form">
                                 @csrf
                                 <input type="hidden" name="id" value="{{ $detailedProduct->id }}">
-
+                                
                                 @if ($detailedProduct->choice_options != null)
+                                 
                                     @foreach (json_decode($detailedProduct->choice_options) as $key => $choice)
-
+                                   
+                                    @if($choice->attribute_id)
                                     <div class="row no-gutters">
                                         <div class="col-2">
                                             <div class="product-description-label mt-2 ">{{ \App\Attribute::find($choice->attribute_id)->name }}:</div>
                                         </div>
+                                       
                                         <div class="col-10">
                                             <ul class="list-inline checkbox-alphanumeric checkbox-alphanumeric--style-1 mb-2">
                                                 @foreach ($choice->values as $key => $value)
@@ -211,29 +227,45 @@
                                             </ul>
                                         </div>
                                     </div>
+                                    @endif
 
                                     @endforeach
                                 @endif
-
+                              
                                 @if (count(json_decode($detailedProduct->colors)) > 0)
                                     <div class="row no-gutters">
                                         <div class="col-2">
-                                            <div class="product-description-label mt-2">{{__('Color')}}:</div>
+                                            <div class="product-description-label mt-2">Colors :</div>
                                         </div>
                                         <div class="col-10">
                                             <ul class="list-inline checkbox-color mb-1">
-                                                @foreach (json_decode($detailedProduct->colors) as $key => $color)
+                                                <?php  $images=json_decode($detailedProduct->var_img);
+                                                       $colors=json_decode($detailedProduct->colors);
+                                                ?>
+                                            <?php    for ($i=0;$i<count($colors);$i++){ 
+                                            
+                                            if (strpos($images[$i], 'uploads') !== false) {
+                                                $image=asset($images[$i]);
+                                            }else{
+                                                $image=$images[$i];
+                                            }
+                                            
+                                            ?>
+                                           
                                                     <li>
-                                                        <input type="radio" id="{{ $detailedProduct->id }}-color-{{ $key }}" name="color" value="{{ $color }}" @if($key == 0) checked @endif>
-                                                        <label style="background: {{ $color }};" for="{{ $detailedProduct->id }}-color-{{ $key }}" data-toggle="tooltip"></label>
-                                                    </li>
-                                                @endforeach
+                                                        <input type="radio" id="{{ $detailedProduct->id }}-color-{{ $i }}" name="color" value="{{ $colors[$i] }}" @if($i == 0) checked @endif>
+                                                        <label for="{{ $detailedProduct->id }}-color-{{ $i }}" data-toggle="tooltip" style="height:70px;width:60px;margin:5px;"> <img src="{{$image}}" class="img-fluid" ></label>
+                                                       
+                                                   </li>
+                                              <?php } ?>
                                             </ul>
                                         </div>
                                     </div>
+                                  @endif
+                                  
+                              
 
-                                    <hr>
-                                @endif
+                          
 
                                 <!-- Quantity + Add to cart -->
                                 <div class="row no-gutters">
@@ -301,13 +333,13 @@
                             <div class="d-table width-100 mt-3">
                                 <div class="d-table-cell">
                                     <!-- Add to wishlist button -->
-                                    <button type="button" class="btn pl-0 btn-link strong-700" onclick="addToWishList({{ $detailedProduct->id }})">
+<!--                                    <button type="button" class="btn pl-0 btn-link strong-700" onclick="addToWishList({{ $detailedProduct->id }})">
                                         {{__('Add to wishlist')}}
                                     </button>
-                                    <!-- Add to compare button -->
+                                     Add to compare button 
                                     <button type="button" class="btn btn-link btn-icon-left strong-700" onclick="addToCompare({{ $detailedProduct->id }})">
                                         {{__('Add to compare')}}
-                                    </button>
+                                    </button>-->
                                     @if(Auth::check() && \App\Addon::where('unique_identifier', 'affiliate_system')->first() != null && \App\Addon::where('unique_identifier', 'affiliate_system')->first()->activated && (\App\AffiliateOption::where('type', 'product_sharing')->first()->status || \App\AffiliateOption::where('type', 'category_wise_affiliate')->first()->status) && Auth::user()->affiliate_user != null && Auth::user()->affiliate_user->status)
                                         @php
                                             if(Auth::check()){
@@ -326,7 +358,7 @@
                                     @endif
                                 </div>
                             </div>
-
+   
                             <hr class="mt-2">
 
                             @php
@@ -409,7 +441,7 @@
             </div>
         </div>
     </section>
-
+ 
     <section class="gry-bg">
         <div class="container">
             <div class="row">
@@ -418,8 +450,11 @@
                     <div class="product-desc-tab bg-white">
                         <div class="tabs tabs--style-2">
                             <ul class="nav nav-tabs justify-content-center sticky-top bg-white">
+                                <!--<li class="nav-item">-->
+                                <!--    <a href="#tab_default_5" data-toggle="tab" class="nav-link text-uppercase strong-600 active show">Product Details</a>-->
+                                <!--</li>-->
                                 <li class="nav-item">
-                                    <a href="#tab_default_1" data-toggle="tab" class="nav-link text-uppercase strong-600 active show">{{__('Description')}}</a>
+                                    <a href="#tab_default_1" data-toggle="tab" class="nav-link text-uppercase strong-600">{{__('Description')}}</a>
                                 </li>
                                 @if($detailedProduct->video_link != null)
                                     <li class="nav-item">
@@ -436,6 +471,8 @@
                                 </li>
                             </ul>
 
+
+                          
                             <div class="tab-content pt-0">
                                 <div class="tab-pane active show" id="tab_default_1">
                                     <div class="py-2 px-4">

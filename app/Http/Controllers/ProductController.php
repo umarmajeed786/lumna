@@ -104,6 +104,8 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
+      
+       
         $refund_request_addon = \App\Addon::where('unique_identifier', 'refund_request')->first();
 
         $product = new Product;
@@ -141,6 +143,17 @@ class ProductController extends Controller
             }
             $product->photos = json_encode($photos);
         }
+        
+        $color_images=array();
+        
+         if($request->hasFile('color_img')){
+            foreach ($request->color_img as $key => $photo) {
+                $path =$photo->store('uploads/products/photos');
+                array_push($color_images, $path);
+                //ImageOptimizer::optimize(base_path('public/').$path);
+            }
+            $product->var_img = json_encode($color_images);
+        }
 
         if($request->hasFile('thumbnail_img')){
             $product->thumbnail_img = $request->thumbnail_img->store('uploads/products/thumbnail');
@@ -156,6 +169,16 @@ class ProductController extends Controller
             $product->flash_deal_img = $request->flash_deal_img->store('uploads/products/flash_deal');
             //ImageOptimizer::optimize(base_path('public/').$product->flash_deal_img);
         }
+        
+        $spec_arr=array();
+        
+         if($request->has('specifications')){
+            foreach($request->specifications as $item){
+                $spec_arr[]=array('name'=>$item['spec_name'],'value'=>$item['spec_val']);
+            }
+        }
+        
+        $product->specifications=json_encode($spec_arr);
 
         $product->unit = $request->unit;
         $product->tags = implode('|',$request->tags);
@@ -322,6 +345,7 @@ class ProductController extends Controller
      */
     public function admin_product_edit($id)
     {
+        
         $product = Product::findOrFail(decrypt($id));
         $tags = json_decode($product->tags);
         $categories = Category::all();
@@ -351,6 +375,7 @@ class ProductController extends Controller
      */
     public function update(Request $request, $id)
     {
+       
         $refund_request_addon = \App\Addon::where('unique_identifier', 'refund_request')->first();
         $product = Product::findOrFail($id);
         $product->name = $request->name;
@@ -385,6 +410,35 @@ class ProductController extends Controller
             }
         }
         $product->photos = json_encode($photos);
+        
+        
+         if($request->has('previous_color_photos')){
+            $color_images = $request->previous_color_photos;
+        }
+        else{
+             $color_images=array();
+        }
+        
+        
+         if($request->hasFile('color_img')){
+            foreach ($request->color_img as $key => $photo) {
+                $path =$photo->store('uploads/products/photos');
+                array_push($color_images, $path);
+                //ImageOptimizer::optimize(base_path('public/').$path);
+            }
+            $product->var_img = json_encode($color_images);
+        }
+
+$spec_arr=array();
+        
+         if($request->has('specifications')){
+            foreach($request->specifications as $item){
+                $spec_arr[]=array('name'=>$item['spec_name'],'value'=>$item['spec_val']);
+            }
+        }
+        
+        $product->specifications=json_encode($spec_arr);
+
 
         $product->thumbnail_img = $request->previous_thumbnail_img;
         if($request->hasFile('thumbnail_img')){
@@ -508,8 +562,13 @@ class ProductController extends Controller
                     }
                     else{
                         if($request->has('colors_active') && $request->has('colors') && count($request->colors) > 0){
-                            $color_name = \App\Color::where('code', $item)->first()->name;
-                            $str .= $color_name;
+                            $color_name = \App\Color::where('code', $item)->first();
+                            if($color_name){
+                            $str .= $color_name->name;     
+                            }else{
+                                 $str .= $item;
+                            }
+                           
                         }
                         else{
                             $str .= str_replace(' ', '', $item);
@@ -522,7 +581,7 @@ class ProductController extends Controller
                     $product_stock = new ProductStock;
                     $product_stock->product_id = $product->id;
                 }
-
+               
                 $product_stock->variant = $str;
                 $product_stock->price = $request['price_'.str_replace('.', '_', $str)];
                 $product_stock->sku = $request['sku_'.str_replace('.', '_', $str)];
@@ -676,7 +735,7 @@ class ProductController extends Controller
     public function sku_combination_edit(Request $request)
     {
         $product = Product::findOrFail($request->id);
-
+     
         $options = array();
         if($request->has('colors_active') && $request->has('colors') && count($request->colors) > 0){
             $colors_active = 1;
@@ -696,47 +755,51 @@ class ProductController extends Controller
                 array_push($options, explode(',', $my_str));
             }
         }
+        
 
         $combinations = combinations($options);
+       
         return view('partials.sku_combinations_edit', compact('combinations', 'unit_price', 'colors_active', 'product_name', 'product'));
+      
+      
     }
     
-//    public function collections_list(Request $request){
-//         $type = 'Collection';
-//        $col_name = null;
-//        $query = null;
-//        $sort_search = null;
-//
-//        $collections =  DB::table('collections');
-//
-//        if ($request->type != null){
-//            $var = explode(",", $request->type);
-//            $col_name = $var[0];
-//            $query = $var[1];
-//            $products = $products->orderBy($col_name, $query);
-//            $sort_type = $request->type;
-//        }
-//        if ($request->search != null){
-//            $products = $products
-//                        ->where('name', 'like', '%'.$request->search.'%');
-//            $sort_search = $request->search;
-//        }
-//
-//        $collections =  DB::table('collections')->orderBy('created_at', 'desc')->paginate(15);
-//
-//        return view('collections.index', compact('collections','type', 'col_name', 'query', 'sort_search'));
-//        
-//    }
-//     public function collections_create()
-//    {
-//        $products='';
-//        $products = Product::all();
-//        return view('collections.create', compact('products'));
-//    }
-//    
-//    public function collections_store(Request $request){
-//        dd($request);
-//    }
+    public function collections_list(Request $request){
+         $type = 'Collection';
+        $col_name = null;
+        $query = null;
+        $sort_search = null;
+
+        $collections =  DB::table('collections');
+
+        if ($request->type != null){
+            $var = explode(",", $request->type);
+            $col_name = $var[0];
+            $query = $var[1];
+            $products = $products->orderBy($col_name, $query);
+            $sort_type = $request->type;
+        }
+        if ($request->search != null){
+            $products = $products
+                        ->where('name', 'like', '%'.$request->search.'%');
+            $sort_search = $request->search;
+        }
+
+        $collections =  DB::table('collections')->orderBy('created_at', 'desc')->paginate(15);
+
+        return view('collections.index', compact('collections','type', 'col_name', 'query', 'sort_search'));
+        
+    }
+     public function collections_create()
+    {
+        $products='';
+        $products = Product::all();
+        return view('collections.create', compact('products'));
+    }
+    
+    public function collections_store(Request $request){
+        dd($request);
+    }
 
 
 }

@@ -658,8 +658,8 @@
     <div class="main-nav-area d-none d-lg-block">-
                     <nav class="navbar navbar-expand-sm navbar-light">
                         <div class="container">
-  <ul class="navbar-nav">
-      @foreach (\App\Category::all()->take(9) as $key => $category)
+  <ul class="navbar-nav" style="margin: auto;">
+      @foreach (\App\Category::all()->where('published', 1)->take(9) as $key => $category)
                                     @php
                                         $brands = array();
                                     @endphp

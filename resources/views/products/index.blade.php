@@ -68,6 +68,8 @@
                     <th>{{__('Num of Sale')}}</th>
                     <th>{{__('Total Stock')}}</th>
                     <th>{{__('Base Price')}}</th>
+                    <th>External link</th>
+                    <th>Purchase Price</th>
                     <th>{{__('Todays Deal')}}</th>
                     <th>{{__('Rating')}}</th>
                     <th>{{__('Published')}}</th>
@@ -110,6 +112,8 @@
                             @endphp
                         </td>
                         <td>{{ number_format($product->unit_price,2) }}</td>
+                        <td>@if($product->external_link!=null)<a class="btn btn-primary" target="_blank" href="{{$product->external_link}}">Link</a>@endif</td>
+                        <td>{{$product->purchase_price}}</td>
                         <td><label class="switch">
                                 <input onchange="update_todays_deal(this)" value="{{ $product->id }}" type="checkbox" <?php if($product->todays_deal == 1) echo "checked";?> >
                                 <span class="slider round"></span></label></td>

@@ -52,14 +52,15 @@
     }
 
     .category-sidebar .categories > li {
-        width: 120px;
-        height: 110px;
+        /*width: 120px;*/
+        height: 160px;
         display: inline-block;
         background: #fff;
-        border-radius: 5px;
-        border: 1px solid #e9e9e9 !important;
-        margin: 0 5px;
+        border-radius: 26px;
+        /*border: 1px solid #e9e9e9 !important;*/
+        /*margin: 5px 5px;*/
         vertical-align: top;
+        
     }
 
     .category-sidebar .categories {
@@ -82,8 +83,8 @@
     }
     .category-sidebar .categories > li > a .cat-image {
         margin: auto;
-        width: 24px;
-        margin-bottom: 8px;
+        width: 100px;
+        /*margin-bottom: 8px;*/
     }
     .category-sidebar .categories > li > a .cat-name {
         font-size: 12px;
@@ -108,14 +109,48 @@
                         <!--        <span class="d-none d-lg-inline-block">{{__('See All')}} ></span>-->
                         <!--    </a>-->
                         <!--</div>-->
-                        <ul class="categories no-scrollbar text-center">
-                            <li class="" style="    width: 15%">
+                           <ul class="categories no-scrollbar text-center col-md-12">
+                            
+                            <li class="col-md-2">
                                 <a href="{{ route('categories.all') }}">
-                                    <img class="cat-image lazyload" src="{{ asset('frontend/images/placeholder.jpg') }}" data-src="{{ asset('frontend/images/icons/list.png') }}" width="30" alt="{{ __('All Category') }}">
-                                    <span class="cat-name">{{__('All')}} {{__('Categories')}}</span>
+                                    <img class="cat-image lazyload" src="{{URL::to('/')}}/public/frontend/img/Furniture.png" data-src="{{URL::to('/')}}/public/frontend/img/Furniture.png" width="30" alt="{{ __('All Category') }}">
+                                    <span class="cat-name">{{__('Hot Products')}}</span>
                                 </a>
                             </li>
-                            @foreach (\App\Category::all()->take(5) as $key => $category)
+                            <li class="col-md-2">
+                                <a href="{{ route('categories.all') }}">
+                                    <img class="cat-image lazyload" src="{{URL::to('/')}}/public/frontend/img/Kitchen.png" data-src="{{URL::to('/')}}/public/frontend/img/Kitchen.png" width="30" alt="{{ __('All Category') }}">
+                                    <span class="cat-name">{{__('Room ideas ')}}</span>
+                                </a>
+                            </li>
+                              <li class="col-md-2">
+                                <a href="{{ route('categories.all') }}">
+                                    <img class="cat-image lazyload" src="{{URL::to('/')}}/public/frontend/img/Lighting.png" data-src="{{URL::to('/')}}/public/frontend/img/Lighting.png" width="30" alt="{{ __('All Category') }}">
+                                    <span class="cat-name">{{__('Business')}}</span>
+                                </a>
+                            </li>
+                              <li class="col-md-2">
+                                <a href="{{ route('categories.all') }}">
+                                    <img class="cat-image lazyload" src="{{URL::to('/')}}/public/frontend/img/Outdoor.png" data-src="{{URL::to('/')}}/public/frontend/img/Outdoor.png" width="30" alt="{{ __('All Category') }}">
+                                    <span class="cat-name">{{__('Wallet')}}</span>
+                                </a>
+                            </li>
+                              <li class="col-md-2">
+                                <a href="{{ route('categories.all') }}">
+                                    <img class="cat-image lazyload" src="{{URL::to('/')}}/public/frontend/img/Rugs.png" data-src="{{URL::to('/')}}/public/frontend/img/Rugs.png" width="30" alt="{{ __('All Category') }}">
+                                    <span class="cat-name">{{__('Shops')}}</span>
+                                </a>
+                            </li>
+                            
+                              <li class="col-md-2">
+                                <a href="{{ route('categories.all') }}">
+                                    <img class="cat-image lazyload" src="{{URL::to('/')}}/public/frontend/img/Appliances.png" data-src="{{URL::to('/')}}/public/frontend/img/Appliances.png" width="30" alt="{{ __('All Category') }}">
+                                    <span class="cat-name">{{__('Promotions')}}</span>
+                                </a>
+                            </li>
+                       
+                             
+                            {{--@foreach (\App\Category::all()->take(5) as $key => $category)
                                 @php
                                     $brands = array();
                                 @endphp
@@ -132,7 +167,7 @@
                                         </div>
                                     @endif
                                 </li>
-                            @endforeach
+                            @endforeach--}}
                         </ul>
                     </div>
                 </div>
@@ -178,8 +213,7 @@
             </div>
         </div>
     </section>
-<section>
-    
+
     @php
         $flash_deal = \App\FlashDeal::where('status', 1)->where('featured', 1)->first();
     @endphp
@@ -287,6 +321,9 @@
     <div id="section_featured">
 
     </div>
+    <div id="section_collections">
+
+    </div>
 
     <div id="section_best_selling" style="display:none">
 
@@ -365,7 +402,8 @@
         </div>
     </div>
 
-    <div id="section_best_sellers">
+ 
+   <div id="section_best_sellers" style="display:none">
 
     </div>
 
@@ -444,6 +482,10 @@
         $(document).ready(function(){
             $.post('{{ route('home.section.featured') }}', {_token:'{{ csrf_token() }}'}, function(data){
                 $('#section_featured').html(data);
+                slickInit();
+            });
+            $.post('{{ route('home.section.collections') }}', {_token:'{{ csrf_token() }}'}, function(data){
+                $('#section_collections').html(data);
                 slickInit();
             });
 

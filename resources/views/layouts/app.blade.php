@@ -117,7 +117,7 @@
 
     <!--Custom JavaScript [ REQUIRED ]-->
     <script src="{{ asset('js/custom.js')}}"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/jquery.repeater@1.2.1/jquery.repeater.min.js"></script>
     <script type="text/javascript">
 
         $( document ).ready(function() {

@@ -351,12 +351,17 @@
     });
 
     function getVariantPrice(){
+        console.log($('#option-choice-form').serializeArray());
         if($('#option-choice-form input[name=quantity]').val() > 0 && checkAddToCartValidity()){
+            
+          
+            
             $.ajax({
                type:"POST",
                url: '{{ route('products.variant_price') }}',
                data: $('#option-choice-form').serializeArray(),
                success: function(data){
+                   console.log(data);
                    $('#option-choice-form #chosen_price_div').removeClass('d-none');
                    $('#option-choice-form #chosen_price_div #chosen_price').html(data.price);
                    $('#available-quantity').html(data.quantity);
@@ -401,6 +406,7 @@
                url: '{{ route('cart.addToCart') }}',
                data: $('#option-choice-form').serializeArray(),
                success: function(data){
+                   console.log(data);
                    $('#addToCart-modal-body').html(null);
                    $('.c-preloader').hide();
                    $('#modal-size').removeClass('modal-lg');
@@ -428,6 +434,7 @@
                    //$('.c-preloader').hide();
                    //$('#modal-size').removeClass('modal-lg');
                    //$('#addToCart-modal-body').html(data);
+                   console.log(data);
                    updateNavCart();
                    $('#cart_items_sidenav').html(parseInt($('#cart_items_sidenav').html())+1);
                    window.location.replace("{{ route('cart') }}");

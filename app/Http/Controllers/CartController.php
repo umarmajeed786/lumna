@@ -32,6 +32,7 @@ class CartController extends Controller
 
     public function addToCart(Request $request)
     {
+        try{
         $product = Product::find($request->id);
 
         $data = array();
@@ -42,12 +43,13 @@ class CartController extends Controller
         //check the color enabled or disabled for the product
         if($request->has('color')){
             $data['color'] = $request['color'];
-            $str = Color::where('code', $request['color'])->first()->name;
+            $str = @Color::where('code', $request['color'])->first()->name;
         }
 
         if ($product->digital != 1) {
             //Gets all the choice values of customer choice option and generate a string like Black-S-Cotton
-            foreach (json_decode(Product::find($request->id)->choice_options) as $key => $choice) {
+            if(Product::find($request->id)->choice_options){
+                 foreach (json_decode(Product::find($request->id)->choice_options) as $key => $choice) {
                 if($str != null){
                     $str .= '-'.str_replace(' ', '', $request['attribute_id_'.$choice->attribute_id]);
                 }
@@ -55,6 +57,8 @@ class CartController extends Controller
                     $str .= str_replace(' ', '', $request['attribute_id_'.$choice->attribute_id]);
                 }
             }
+            }
+           
         }
 
         $data['variant'] = $str;
@@ -148,8 +152,11 @@ class CartController extends Controller
             $cart = collect([$data]);
             $request->session()->put('cart', $cart);
         }
-
+           
         return view('frontend.partials.addedToCart', compact('product', 'data'));
+        }catch(\Exception $e){
+            return array('message'=>$e->getMessage()." on line ".$e->getLine());
+        }
     }
 
     //removes from Cart

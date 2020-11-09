@@ -4,21 +4,39 @@
             <div class="product-gal sticky-top d-flex flex-row-reverse">
                 @if(is_array(json_decode($product->photos)) && count(json_decode($product->photos)) > 0)
                     <div class="product-gal-img">
+                         @if (strpos(json_decode($product->photos)[0], 'img.alicdn.com') !== false)
                         <img src="{{ asset('frontend/images/placeholder.jpg') }}" class="xzoom img-fluid lazyload"
                              src="{{ asset('frontend/images/placeholder.jpg') }}"
-                             data-src="{{ asset(json_decode($product->photos)[0]) }}"
+                             data-src="{{ json_decode($product->photos)[0] }}"
+                             xoriginal="{{ json_decode($product->photos)[0] }}"/>
+                        @else
+                         <img src="{{ asset('frontend/images/placeholder.jpg') }}" class="xzoom img-fluid lazyload"
+                             src="{{ asset('frontend/images/placeholder.jpg') }}"
+                              data-src="{{ asset(json_decode($product->photos)[0]) }}"
                              xoriginal="{{ asset(json_decode($product->photos)[0]) }}"/>
+                        @endif
                     </div>
                     <div class="product-gal-thumb">
                         <div class="xzoom-thumbs">
                             @foreach (json_decode($product->photos) as $key => $photo)
-                                <a href="{{ asset($photo) }}">
+                             @if (strpos($photo, 'img.alicdn.com') !== false)
+                                <a href="{{ $photo}}">
+                                    <img src="{{ asset('frontend/images/placeholder.jpg') }}"
+                                         class="xzoom-gallery lazyload"
+                                         src="{{ asset('frontend/images/placeholder.jpg') }}" width="80"
+                                         data-src="{{ $photo }}"
+                                         @if($key == 0) xpreview="{{ $photo }}" @endif>
+                                </a>
+                            @else 
+                            
+                             <a href="{{ asset($photo) }}">
                                     <img src="{{ asset('frontend/images/placeholder.jpg') }}"
                                          class="xzoom-gallery lazyload"
                                          src="{{ asset('frontend/images/placeholder.jpg') }}" width="80"
                                          data-src="{{ asset($photo) }}"
                                          @if($key == 0) xpreview="{{ asset($photo) }}" @endif>
                                 </a>
+                            @endif
                             @endforeach
                         </div>
                     </div>

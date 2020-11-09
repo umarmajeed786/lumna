@@ -160,6 +160,7 @@
                                 </div>
                             </div>
                         </div>
+                       
 
                         <div class="bg-white sidebar-box mb-3">
                             <div class="box-title text-center">
@@ -171,7 +172,7 @@
                                     @foreach ($all_colors as $key => $color)
                                         <li>
                                             <input type="radio" id="color-{{ $key }}" name="color" value="{{ $color }}" @if(isset($selected_color) && $selected_color == $color) checked @endif onchange="filter()">
-                                            <label style="background: {{ $color }};" for="color-{{ $key }}" data-toggle="tooltip" data-original-title="{{ \App\Color::where('code', $color)->first()->name }}"></label>
+                                            <label style="background: {{ $color }};" for="color-{{ $key }}" data-toggle="tooltip" data-original-title="{{ @\App\Color::where('code', $color)->first()->name }}"></label>
                                         </li>
                                     @endforeach
                                 </ul>
@@ -182,7 +183,7 @@
                             @if (\App\Attribute::find($attribute['id']) != null)
                                 <div class="bg-white sidebar-box mb-3">
                                     <div class="box-title text-center">
-                                        Filter by {{ \App\Attribute::find($attribute['id'])->name }}
+                                        Filter by {{ @\App\Attribute::find($attribute['id'])->name }}
                                     </div>
                                     <div class="box-content">
                                         <!-- Filter by others -->
@@ -213,6 +214,7 @@
                                 </div>
                             @endif
                         @endforeach
+                       
 
                         {{-- <button type="submit" class="btn btn-styled btn-block btn-base-4">Apply filter</button> --}}
                     </div>
@@ -294,6 +296,7 @@
                                 </div>
                             </div>
                         </div>
+                         
                         <input type="hidden" name="min_price" value="">
                         <input type="hidden" name="max_price" value="">
                         <!-- <hr class=""> -->
@@ -304,8 +307,14 @@
                                         <div class="product-box-2 bg-white alt-box my-md-2">
                                             <div class="position-relative overflow-hidden">
                                                 <a href="{{ route('product', $product->slug) }}" class="d-block product-image h-100 text-center" tabindex="0">
-                                                    <img class="img-fit lazyload" src="{{ asset('frontend/images/placeholder.jpg') }}" data-src="{{ asset($product->thumbnail_img) }}" alt="{{ __($product->name) }}">
-                                                </a>
+                                                    @if (strpos($product->thumbnail_img, 'img.alicdn.com') !== false)
+                                                     <img class="img-fit lazyload" src="{{ asset('frontend/images/placeholder.jpg') }}" data-src="{{$product->thumbnail_img }}" alt="{{ __($product->name) }}">
+                                              
+                                                    @else
+                                                     <img class="img-fit lazyload" src="{{ asset('frontend/images/placeholder.jpg') }}" data-src="{{ asset($product->thumbnail_img) }}" alt="{{ __($product->name) }}">
+                                              
+                                                    @endif
+                                                     </a>
                                                 <div class="product-btns clearfix">
                                                     <button class="btn add-wishlist" title="Add to Wishlist" onclick="addToWishList({{ $product->id }})" type="button">
                                                         <i class="la la-heart-o"></i>

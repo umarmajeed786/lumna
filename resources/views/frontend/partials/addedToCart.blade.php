@@ -6,9 +6,15 @@
     <div class="product-box">
         <div class="block">
             <div class="block-image">
+                 @if (strpos($product->thumbnail_img, 'img.alicdn.com') !== false)
+                  <img src="{{ asset('frontend/images/placeholder.jpg') }}" data-src="{{ $product->thumbnail_img }}" class="lazyload" alt="Product Image">
+                 @else
                 <img src="{{ asset('frontend/images/placeholder.jpg') }}" data-src="{{ asset($product->thumbnail_img) }}" class="lazyload" alt="Product Image">
+                 @endif
+               
             </div>
             <div class="block-body">
+               
                 <h6 class="strong-600">
                     {{ __($product->name) }}
                 </h6>

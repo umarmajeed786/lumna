@@ -19,6 +19,7 @@
 		<tbody>
 
 @foreach ($combinations as $key => $combination)
+
 	@php
 		$sku = '';
 		foreach (explode(' ', $product_name) as $key => $value) {
@@ -33,9 +34,17 @@
 			}
 			else{
 				if($colors_active == 1){
-					$color_name = \App\Color::where('code', $item)->first()->name;
-					$str .= $color_name;
-					$sku .='-'.$color_name;
+					$color_name = \App\Color::where('code', $item)->first();
+					if($color_name){
+					
+					$str .= $color_name->name;
+					$sku .='-'.$color_name->name;
+					}else{
+					$str .= $item;
+					$sku .='-'.$item;
+					
+					}
+					
 				}
 				else{
 					$str .= str_replace(' ', '', $item);

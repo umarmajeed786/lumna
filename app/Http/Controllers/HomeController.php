@@ -24,6 +24,7 @@ use App\BusinessSetting;
 use App\Http\Controllers\SearchController;
 use ImageOptimizer;
 use Cookie;
+use DB;
 
 class HomeController extends Controller
 {
@@ -198,7 +199,8 @@ class HomeController extends Controller
      */
     public function index()
     {
-        return view('frontend.index');
+        $collections = DB::table('collections')->orderBy('created_at', 'desc')->paginate(12);
+        return view('frontend.index',compact('collections'));
     }
 
     public function flash_deal_details($slug)
@@ -213,6 +215,9 @@ class HomeController extends Controller
 
     public function load_featured_section(){
         return view('frontend.partials.featured_products_section');
+    }
+    public function load_collections_section(){
+        return view('frontend.partials.collections_section');
     }
 
     public function load_best_selling_section(){
@@ -333,6 +338,22 @@ class HomeController extends Controller
         }
         $products = $products->paginate(10);
         return view('frontend.seller.products', compact('products', 'search'));
+    }
+
+    public function seller_collections_list(Request $request)
+    {
+         $type = 'Collection';
+        $search = null;
+        $products = Product::where('user_id', Auth::user()->id)->orderBy('created_at', 'desc');
+        if ($request->has('search')) {
+            $search = $request->search;
+            $products = $products->where('name', 'like', '%'.$search.'%');
+        }
+        $products = $products->paginate(10);
+      
+        
+        $collections = DB::table('collections')->orderBy('created_at', 'desc')->paginate(15000000);
+        return view('frontend.seller.collections', compact('collections','type', 'search'));
     }
 
     public function ajax_search(Request $request)
@@ -558,13 +579,14 @@ class HomeController extends Controller
 
     public function variant_price(Request $request)
     {
+        try{
         $product = Product::find($request->id);
         $str = '';
         $quantity = 0;
 
         if($request->has('color')){
             $data['color'] = $request['color'];
-            $str = Color::where('code', $request['color'])->first()->name;
+            $str = @Color::where('code', $request['color'])->first()->name;
         }
 
         if(json_decode(Product::find($request->id)->choice_options) != null){
@@ -622,6 +644,9 @@ class HomeController extends Controller
             $price += $product->tax;
         }
         return array('price' => single_price($price*$request->quantity), 'quantity' => $quantity, 'digital' => $product->digital);
+        }catch(\Exception $e){
+            return array('message'=>$e->getMessage());
+        }
     }
 
     public function sellerpolicy(){
